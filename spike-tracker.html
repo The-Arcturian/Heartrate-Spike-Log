@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>♥ Spike Tracker — Michelle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #090e17;
+    --surface: #0f1923;
+    --surface2: #131f2e;
+    --border: #1a2d45;
+    --blue: #3d9bff;
+    --blue-dim: rgba(61,155,255,0.12);
+    --green: #4ecca3;
+    --yellow: #f5c842;
+    --orange: #ff8c42;
+    --red: #ff4d6d;
+    --text: #dde6f0;
+    --text-dim: #5a7a99;
+    --text-mid: #8aaabb;
+    --mono: 'DM Mono', 'Courier New', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior: none;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(160deg, #0a1628 0%, #0f1d35 60%, #0a1220 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .header-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .header-title {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .header-count {
+    text-align: right;
+  }
+
+  .header-count-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .header-count-num {
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1;
+  }
+
+  /* NAV TABS */
+  .nav {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 0;
+  }
+
+  .nav-tab {
+    padding: 10px 18px;
+    border-radius: 10px 10px 0 0;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    bottom: -1px;
+  }
+
+  .nav-tab.active {
+    background: var(--bg);
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+    color: var(--blue);
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 20px 18px 80px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    opacity: 0.3;
+  }
+
+  .empty-text { font-size: 14px; margin-bottom: 6px; }
+  .empty-sub { font-size: 12px; color: var(--border); }
+
+  /* ENTRY CARDS */
+  .entry-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .entry-card {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .entry-card:active { transform: scale(0.98); background: var(--surface2); }
+
+  .entry-meta { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; letter-spacing: 0.5px; }
+  .entry-activity { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .entry-symptoms { font-size: 11px; color: var(--text-mid); margin-top: 4px; }
+
+  .entry-rate-block { text-align: right; flex-shrink: 0; }
+  .entry-rate { font-family: var(--display); font-size: 30px; font-weight: 800; line-height: 1; }
+  .entry-rate-label { font-size: 10px; color: var(--text-dim); }
+  .entry-meds { font-size: 10px; margin-top: 5px; }
+
+  /* FORM */
+  .form { display: flex; flex-direction: column; gap: 18px; }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
+  input[type="date"],
+  input[type="time"],
+  input[type="number"],
+  input[type="text"],
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input:focus, textarea:focus { border-color: var(--blue); }
+
+  input[type="number"] { font-family: var(--display); font-size: 22px; font-weight: 800; }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  .pill-group { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .pill {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pill:active { transform: scale(0.95); }
+
+  .pill.active-blue { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+  .pill.active-pink { border-color: #ff6b9d; background: rgba(255,107,157,0.1); color: #ff6b9d; }
+  .pill.active-yellow { border-color: var(--yellow); background: rgba(245,200,66,0.1); color: var(--yellow); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--blue), #0055bb);
+    color: #fff;
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-primary:disabled { background: var(--surface2); color: var(--text-dim); cursor: not-allowed; }
+  .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mid);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+
+  .btn-secondary:active { background: var(--surface2); }
+
+  .btn-danger {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,77,109,0.3);
+    background: transparent;
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  /* DETAIL */
+  .detail-card {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 22px;
+    margin-bottom: 14px;
+  }
+
+  .detail-rate { font-family: var(--display); font-size: 56px; font-weight: 800; line-height: 1; }
+  .detail-bpm { font-size: 18px; color: var(--text-dim); font-family: var(--mono); }
+
+  .detail-rows { margin-top: 22px; display: flex; flex-direction: column; gap: 0; }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row-label { font-size: 10px; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; flex-shrink: 0; }
+  .detail-row-value { font-size: 13px; color: var(--text); text-align: right; }
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--blue);
+    font-family: var(--mono);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* DATA MANAGEMENT */
+  .data-section {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  .data-section-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .data-section-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--green);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 800;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0 18px;
+  }
+
+  /* Colorize rate input dynamically */
+  #rateInput { transition: color 0.3s; }
+
+  @media (prefers-color-scheme: light) {
+    /* keep dark — this is a medical app, dark is safer on eyes */
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label">Michelle · Cardiac Log</div>
+      <div class="header-title">♥ Spike Tracker</div>
+    </div>
+    <div class="header-count">
+      <div class="header-count-label">EVENTS</div>
+      <div class="header-count-num" id="eventCount">0</div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-tab active" onclick="switchTab('log')" id="tab-log">📋 Log</button>
+    <button class="nav-tab" onclick="switchTab('add')" id="tab-add">＋ Add</button>
+    <button class="nav-tab" onclick="switchTab('data')" id="tab-data">⬆ Data</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- LOG TAB -->
+  <div id="view-log">
+    <div id="empty-state" class="empty">
+      <div class="empty-icon">♡</div>
+      <div class="empty-text">No events logged yet.</div>
+      <div class="empty-sub">Tap + Add to record your first spike.</div>
+    </div>
+    <div class="entry-list" id="entry-list"></div>
+  </div>
+
+  <!-- ADD TAB -->
+  <div id="view-add" style="display:none">
+    <div class="form">
+
+      <div>
+        <div class="field-label">Date</div>
+        <input type="date" id="f-date">
+      </div>
+
+      <div>
+        <div class="field-label">Time</div>
+        <input type="time" id="f-time">
+      </div>
+
+      <div>
+        <div class="field-label">Peak Heart Rate (bpm)</div>
+        <input type="number" id="rateInput" placeholder="e.g. 122" min="40" max="300"
+          oninput="colorizeRate(this)">
+      </div>
+
+      <div>
+        <div class="field-label">What were you doing?</div>
+        <input type="text" id="f-activity" placeholder="e.g. walking Walmart, gardening…">
+      </div>
+
+      <div>
+        <div class="field-label">Meds on time?</div>
+        <div class="pill-group" id="meds-group">
+          <button class="pill active-blue" onclick="selectPill('meds','yes',this)">Yes</button>
+          <button class="pill" onclick="selectPill('meds','no',this)">No</button>
+          <button class="pill" onclick="selectPill('meds','late',this)">Late</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">Symptoms (select all that apply)</div>
+        <div class="pill-group" id="symptom-group">
+          <button class="pill" onclick="toggleSymptom(this)">None</button>
+          <button class="pill" onclick="toggleSymptom(this)">Palpitations</button>
+          <button class="pill" onclick="toggleSymptom(this)">Chest tightness</button>
+          <button class="pill" onclick="toggleSymptom(this)">Dizziness</button>
+          <button class="pill" onclick="toggleSymptom(this)">Shortness of breath</button>
+          <button class="pill" onclick="toggleSymptom(this)">Fatigue</button>
+          <button class="pill" onclick="toggleSymptom(this)">Other</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">Likely trigger</div>
+        <div class="pill-group" id="trigger-group">
+          <button class="pill" onclick="selectPill('trigger','Unknown',this)">Unknown</button>
+          <button class="pill" onclick="selectPill('trigger','Exertion',this)">Exertion</button>
+          <button class="pill" onclick="selectPill('trigger','Stress',this)">Stress</button>
+          <button class="pill" onclick="selectPill('trigger','Heat',this)">Heat</button>
+          <button class="pill" onclick="selectPill('trigger','Storm/pressure',this)">Storm/pressure</button>
+          <button class="pill" onclick="selectPill('trigger','Poor sleep',this)">Poor sleep</button>
+          <button class="pill" onclick="selectPill('trigger','Errand/store',this)">Errand/store</button>
+          <button class="pill" onclick="selectPill('trigger','Emotional',this)">Emotional</button>
+          <button class="pill" onclick="selectPill('trigger','Other',this)">Other</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">Notes (optional)</div>
+        <textarea id="f-notes" placeholder="Anything else worth noting…"></textarea>
+      </div>
+
+      <button class="btn-primary" onclick="saveEntry()" id="save-btn">Save Event</button>
+    </div>
+  </div>
+
+  <!-- DATA TAB -->
+  <div id="view-data" style="display:none">
+
+    <div class="data-section">
+      <div class="data-section-title">Export Log (JSON)</div>
+      <div class="data-section-desc">Downloads a complete backup of all your entries as a .json file. Save to iCloud Drive or Files for safekeeping. Use this before clearing Safari data or switching devices.</div>
+      <button class="btn-secondary" onclick="exportJSON()">⬇ Download spike-log.json</button>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-title">Export as Text</div>
+      <div class="data-section-desc">Downloads a clean, readable .txt summary of your log — useful to email to your cardiologist or share with your care team.</div>
+      <button class="btn-secondary" onclick="exportText()">⬇ Download spike-log.txt</button>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-title">Import Log (JSON)</div>
+      <div class="data-section-desc">Restore a previously exported .json backup. This will merge with your existing entries — duplicates are skipped automatically.</div>
+      <button class="btn-secondary" onclick="document.getElementById('import-file').click()">⬆ Import from File</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(this)">
+    </div>
+
+    <div class="data-section" style="border-color: rgba(255,77,109,0.2);">
+      <div class="data-section-title" style="color: var(--red)">Clear All Data</div>
+      <div class="data-section-desc">Permanently deletes all entries from this device. Export a backup first. This cannot be undone.</div>
+      <button class="btn-danger" onclick="confirmClear()">⚠ Clear All Entries</button>
+    </div>
+
+  </div>
+
+  <!-- DETAIL VIEW (hidden by default) -->
+  <div id="view-detail" style="display:none">
+    <button class="back-btn" onclick="closeDetail()">← Back to log</button>
+    <div id="detail-content"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'michelle-spike-log-v1';
+let entries = [];
+let formState = { meds: 'yes', trigger: '', symptoms: [] };
+let currentTab = 'log';
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  setDefaultDateTime();
+  renderLog();
+});
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    entries = raw ? JSON.parse(raw) : [];
+  } catch { entries = []; }
+}
+
+function saveToStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); } catch {}
+}
+
+function setDefaultDateTime() {
+  const now = new Date();
+  document.getElementById('f-date').value = now.toISOString().slice(0,10);
+  document.getElementById('f-time').value = now.toTimeString().slice(0,5);
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['log','add','data'].forEach(t => {
+    document.getElementById('view-'+t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t === tab);
+  });
+  document.getElementById('view-detail').style.display = 'none';
+  currentTab = tab;
+}
+
+// ─── RATE COLOR ───────────────────────────────────────────────────────────────
+function rateColor(n) {
+  if (n >= 140) return '#ff4d6d';
+  if (n >= 120) return '#ff8c42';
+  if (n >= 100) return '#f5c842';
+  return '#4ecca3';
+}
+
+function colorizeRate(el) {
+  const n = parseInt(el.value);
+  el.style.color = n ? rateColor(n) : 'var(--text-dim)';
+}
+
+// ─── PILLS ────────────────────────────────────────────────────────────────────
+function selectPill(type, value, el) {
+  const group = type === 'meds' ? 'meds-group' : 'trigger-group';
+  const activeClass = type === 'meds' ? 'active-blue' : 'active-yellow';
+  document.querySelectorAll(`#${group} .pill`).forEach(p => p.classList.remove(activeClass));
+  el.classList.add(activeClass);
+  formState[type] = value;
+}
+
+function toggleSymptom(el) {
+  const val = el.textContent;
+  if (el.classList.contains('active-pink')) {
+    el.classList.remove('active-pink');
+    formState.symptoms = formState.symptoms.filter(s => s !== val);
+  } else {
+    el.classList.add('active-pink');
+    formState.symptoms.push(val);
+  }
+}
+
+// ─── SAVE ENTRY ───────────────────────────────────────────────────────────────
+function saveEntry() {
+  const rate = document.getElementById('rateInput').value;
+  const activity = document.getElementById('f-activity').value.trim();
+  if (!rate || !activity) { showToast('⚠ Rate and activity are required'); return; }
+
+  const entry = {
+    id: Date.now(),
+    date: document.getElementById('f-date').value,
+    time: document.getElementById('f-time').value,
+    rate: parseInt(rate),
+    activity,
+    meds: formState.meds || 'yes',
+    symptoms: [...formState.symptoms],
+    trigger: formState.trigger || '',
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+
+  entries.unshift(entry);
+  saveToStorage();
+  renderLog();
+  resetForm();
+  showToast('✓ Event saved');
+  setTimeout(() => switchTab('log'), 1000);
+}
+
+function resetForm() {
+  document.getElementById('rateInput').value = '';
+  document.getElementById('rateInput').style.color = '';
+  document.getElementById('f-activity').value = '';
+  document.getElementById('f-notes').value = '';
+  formState = { meds: 'yes', trigger: '', symptoms: [] };
+  setDefaultDateTime();
+  // reset pills
+  document.querySelectorAll('#meds-group .pill').forEach((p,i) => {
+    p.classList.toggle('active-blue', i === 0);
+  });
+  document.querySelectorAll('#trigger-group .pill, #symptom-group .pill').forEach(p => {
+    p.classList.remove('active-yellow','active-pink');
+  });
+}
+
+// ─── RENDER LOG ───────────────────────────────────────────────────────────────
+function renderLog() {
+  document.getElementById('eventCount').textContent = entries.length;
+  const list = document.getElementById('entry-list');
+  const empty = document.getElementById('empty-state');
+
+  if (entries.length === 0) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = entries.map(e => `
+    <div class="entry-card" style="border-left-color:${rateColor(e.rate)}" onclick="openDetail(${e.id})">
+      <div style="flex:1;min-width:0">
+        <div class="entry-meta">${formatDate(e.date)} · ${e.time}</div>
+        <div class="entry-activity">${e.activity}</div>
+        ${e.symptoms.length && e.symptoms[0] !== 'None'
+          ? `<div class="entry-symptoms">${e.symptoms.join(', ')}</div>` : ''}
+      </div>
+      <div class="entry-rate-block">
+        <div class="entry-rate" style="color:${rateColor(e.rate)}">${e.rate}</div>
+        <div class="entry-rate-label">bpm</div>
+        <div class="entry-meds" style="color:${e.meds==='yes'?'var(--green)':'var(--orange)'}">
+          ${e.meds === 'yes' ? '✓ meds' : e.meds === 'late' ? '⚠ late' : '✗ missed'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── DETAIL ───────────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+
+  ['log','add','data'].forEach(t => {
+    document.getElementById('view-'+t).style.display = 'none';
+  });
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-card" style="border-top: 3px solid ${rateColor(e.rate)}">
+      <div class="entry-meta">${formatDate(e.date)} · ${e.time}</div>
+      <div style="margin-top:8px">
+        <span class="detail-rate" style="color:${rateColor(e.rate)}">${e.rate}</span>
+        <span class="detail-bpm"> bpm</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-row-label">Activity</span>
+          <span class="detail-row-value">${e.activity}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-row-label">Meds</span>
+          <span class="detail-row-value" style="color:${e.meds==='yes'?'var(--green)':'var(--orange)'}">
+            ${e.meds === 'yes' ? 'On time ✓' : e.meds === 'late' ? 'Late ⚠' : 'Missed ✗'}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-row-label">Symptoms</span>
+          <span class="detail-row-value">${e.symptoms.length ? e.symptoms.join(', ') : 'None'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-row-label">Trigger</span>
+          <span class="detail-row-value">${e.trigger || 'Not noted'}</span>
+        </div>
+        ${e.notes ? `
+        <div class="detail-row">
+          <span class="detail-row-label">Notes</span>
+          <span class="detail-row-value">${e.notes}</span>
+        </div>` : ''}
+      </div>
+    </div>
+    <button class="btn-danger" onclick="deleteEntry(${e.id})">Delete this entry</button>
+  `;
+
+  document.getElementById('view-detail').style.display = 'block';
+}
+
+function closeDetail() {
+  document.getElementById('view-detail').style.display = 'none';
+  switchTab('log');
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  entries = entries.filter(e => e.id !== id);
+  saveToStorage();
+  renderLog();
+  closeDetail();
+  showToast('Entry deleted');
+}
+
+// ─── DATA MANAGEMENT ──────────────────────────────────────────────────────────
+function exportJSON() {
+  if (entries.length === 0) { showToast('No entries to export'); return; }
+  const date = new Date().toISOString().slice(0,10);
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+  downloadBlob(blob, `spike-log-${date}.json`);
+  showToast('✓ JSON exported');
+}
+
+function exportText() {
+  if (entries.length === 0) { showToast('No entries to export'); return; }
+  const date = new Date().toISOString().slice(0,10);
+  let txt = `MICHELLE NORFIELD — CARDIAC SPIKE LOG\nExported: ${date}\nTotal events: ${entries.length}\n`;
+  txt += '═'.repeat(45) + '\n\n';
+  entries.forEach((e, i) => {
+    txt += `Event #${entries.length - i}\n`;
+    txt += `Date/Time : ${formatDate(e.date)} at ${e.time}\n`;
+    txt += `Peak HR   : ${e.rate} bpm\n`;
+    txt += `Activity  : ${e.activity}\n`;
+    txt += `Meds      : ${e.meds === 'yes' ? 'On time' : e.meds === 'late' ? 'Late' : 'Missed'}\n`;
+    txt += `Symptoms  : ${e.symptoms.length ? e.symptoms.join(', ') : 'None'}\n`;
+    txt += `Trigger   : ${e.trigger || 'Not noted'}\n`;
+    if (e.notes) txt += `Notes     : ${e.notes}\n`;
+    txt += '─'.repeat(45) + '\n\n';
+  });
+  const blob = new Blob([txt], { type: 'text/plain' });
+  downloadBlob(blob, `spike-log-${date}.txt`);
+  showToast('✓ Text log exported');
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error();
+      const existingIds = new Set(entries.map(x => x.id));
+      const newEntries = imported.filter(x => !existingIds.has(x.id));
+      entries = [...entries, ...newEntries].sort((a,b) => b.id - a.id);
+      saveToStorage();
+      renderLog();
+      showToast(`✓ Imported ${newEntries.length} new entries`);
+    } catch {
+      showToast('⚠ Invalid file — import failed');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function confirmClear() {
+  if (!confirm('This will permanently delete ALL entries on this device. Make sure you have exported a backup first.\n\nAre you sure?')) return;
+  entries = [];
+  saveToStorage();
+  renderLog();
+  showToast('All entries cleared');
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function formatDate(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
